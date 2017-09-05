@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/owenso/crypto-portfolio-api/config"
 )
 
 func main() {
@@ -13,8 +15,8 @@ func main() {
 		fmt.Println("No Environment found. Defaulting to 'dev'")
 	}
 
-	config, _ := LoadConfiguration("./config/config." + os.Getenv("ENV") + ".json")
-	a.Initialize(config.Database.URI)
+	configFile, _ := config.LoadConfiguration()
+	a.Initialize(configFile.Database.URI)
 
 	a.Run(":3001")
 }

@@ -20,8 +20,6 @@ func GetTime(db *sql.DB) (time string, timeErr error) {
 		fmt.Println(timeErr)
 		return "", timeErr
 	}
-
 	fmt.Println(now)
-
 	return now, nil
 }

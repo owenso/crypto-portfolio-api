@@ -52,8 +52,14 @@ func (a *App) Initialize(connectionString string) {
 
 func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/", controllers.HomePage).Methods("GET")
-	// a.Router.HandleFunc("/product", a.createProduct).Methods("POST")
-	// a.Router.HandleFunc("/product/{id:[0-9]+}", a.getProduct).Methods("GET")
-	// a.Router.HandleFunc("/product/{id:[0-9]+}", a.updateProduct).Methods("PUT")
-	// a.Router.HandleFunc("/product/{id:[0-9]+}", a.deleteProduct).Methods("DELETE")
+	a.Router.HandleFunc("/user/signup", func(w http.ResponseWriter, r *http.Request) { controllers.UserSignup(w, r, a.DB) }).Methods("POST")
+	a.Router.HandleFunc("/user/signin", func(w http.ResponseWriter, r *http.Request) { controllers.UserSignin(w, r, a.DB) }).Methods("POST")
+	a.Router.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) { controllers.GetUser(w, r, a.DB) }).Methods("GET")
+
+	// a.Router.HandleFunc("/user/{id}", a.updateProduct).Methods("PUT")
+	// a.Router.HandleFunc("/user/{id}", a.deleteProduct).Methods("DELETE")
+	a.Router.HandleFunc("/users/all/{start}/{count}", func(w http.ResponseWriter, r *http.Request) { controllers.GetUsers(w, r, a.DB) }).Methods("GET")
+	a.Router.HandleFunc("/users/search/email/{search}", func(w http.ResponseWriter, r *http.Request) { controllers.FindUserByEmail(w, r, a.DB) }).Methods("GET")
+	a.Router.HandleFunc("/users/search/username/{search}", func(w http.ResponseWriter, r *http.Request) { controllers.FindUsersByUsername(w, r, a.DB) }).Methods("GET")
+
 }
