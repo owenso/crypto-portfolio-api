@@ -16,11 +16,15 @@ type User struct {
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
 	Email     string `json:"email"`
-	Password  string `json:"password,omitempty"`
-	Provider  string `json:"provider,omitempty"`
-	Created   string `json:"created,omitempty"`
-	Updated   string `json:"updated,omitempty"`
-	LastSeen  string `json:"lastseen,omitempty"`
+	Phone     struct {
+		CountryCode string `json:"countryCode,omitempty"`
+		PhoneNumber string `json:"phoneNumber,omitempty"`
+	} `json:"phone,omitempty"`
+	Password string `json:"password,omitempty"`
+	Provider string `json:"provider,omitempty"`
+	Created  string `json:"created,omitempty"`
+	Updated  string `json:"updated,omitempty"`
+	LastSeen string `json:"lastseen,omitempty"`
 }
 
 func hashPassword(pass string) (hash []byte, err error) {
