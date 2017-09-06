@@ -12,6 +12,11 @@ import (
 	"github.com/owenso/crypto-portfolio-api/utils"
 )
 
+type userResponse struct {
+	models.User
+	models.Token
+}
+
 func UserSignup(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	var u models.User
 	decoder := json.NewDecoder(r.Body)
@@ -28,7 +33,17 @@ func UserSignup(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusCreated, u)
+	var t models.Token
+
+	if err := t.CreateToken(u); err != nil {
+		fmt.Println(err)
+		utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	res := userResponse{u, t}
+
+	utils.RespondWithJSON(w, http.StatusCreated, res)
 }
 
 func UserSignin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -47,7 +62,17 @@ func UserSignin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	utils.RespondWithJSON(w, http.StatusOK, u)
+	var t models.Token
+
+	if err := t.CreateToken(u); err != nil {
+		fmt.Println(err)
+		utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	res := userResponse{u, t}
+
+	utils.RespondWithJSON(w, http.StatusOK, res)
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request, db *sql.DB) {

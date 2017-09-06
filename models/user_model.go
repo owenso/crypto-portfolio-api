@@ -23,11 +23,6 @@ type User struct {
 	LastSeen  string `json:"lastseen,omitempty"`
 }
 
-//Token : User token
-type Token struct {
-	Token string `json:"token"`
-}
-
 func hashPassword(pass string) (hash []byte, err error) {
 	hash, err = bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
 	return hash, err
