@@ -17,6 +17,7 @@ func main() {
 
 	configFile, _ := config.LoadConfiguration()
 	a.Initialize(configFile.Database.URI)
+	a.ConfigureRouting()
 
 	a.Run(":3001")
 }
