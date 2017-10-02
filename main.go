@@ -19,5 +19,5 @@ func main() {
 	a.Initialize(configFile.Database.URI)
 	a.ConfigureRouting()
 
-	a.Run(":3001")
+	a.Run(":8009")
 }

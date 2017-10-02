@@ -19,7 +19,6 @@ func (t *Token) CreateToken(u User) error {
 		return err
 	}
 	tokenSecret := []byte(configFile.Secret)
-	fmt.Println(configFile.Secret)
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := make(jwt.MapClaims)
 	claims["user"] = u

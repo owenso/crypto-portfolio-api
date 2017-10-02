@@ -12,11 +12,11 @@ DROP TABLE IF EXISTS portfolioType CASCADE;
 DROP TABLE IF EXISTS alerts CASCADE;
 DROP TABLE IF EXISTS phoneNumber CASCADE;
 
-CREATE TABLE phoneNumber(
-	id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    countryCode VARCHAR(3),
-    phoneNumber VARCHAR(12)
-);
+-- CREATE TABLE phoneNumber(
+-- 	id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--     countryCode VARCHAR(3),
+--     phoneNumber VARCHAR(12)
+-- );
 
 CREATE TABLE privacy(
     id SERIAL PRIMARY KEY,
@@ -34,7 +34,7 @@ CREATE TABLE users(
 	firstname VARCHAR(50),
 	lastname VARCHAR(50),
 	email VARCHAR(255) UNIQUE NOT NULL,
-    phone uuid REFERENCES phoneNumber,
+    -- phone uuid REFERENCES phoneNumber,
 	password BYTEA NOT NULL,
     provider VARCHAR(50),
     created TIMESTAMP DEFAULT current_timestamp,

@@ -10,3 +10,4 @@ type Portfolio struct {
 	Created         string `json:"created,omitempty"`
 	Updated         string `json:"updated,omitempty"`
 }
+

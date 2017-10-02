@@ -62,10 +62,11 @@ func (a *App) ConfigureRouting() {
 	))
 	a.initializeRoutes()
 	a.initializeProtectedRoutes()
+	fmt.Println("Routes Up")
 }
 
 func (a *App) initializeRoutes() {
-	a.Router.HandleFunc("/", controllers.HomePage).Methods("GET")
+	// a.Router.HandleFunc("/", controllers.HomePage).Methods("GET")
 	a.Router.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) { controllers.UserSignup(w, r, a.DB) }).Methods("POST")
 	a.Router.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) { controllers.UserSignin(w, r, a.DB) }).Methods("POST")
 }
