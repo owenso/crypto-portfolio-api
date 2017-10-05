@@ -10,9 +10,9 @@ import (
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
-	"github.com/urfave/negroni"
-
 	"github.com/owenso/crypto-portfolio-api/controllers"
+	"github.com/rs/cors"
+	"github.com/urfave/negroni"
 )
 
 type App struct {
@@ -22,8 +22,9 @@ type App struct {
 }
 
 func (a *App) Run(addr string) {
-	log.Fatal(http.ListenAndServe(addr, a.Router))
+	handler := cors.Default().Handler(a.Router)
 	fmt.Println("Server running on port", addr)
+	log.Fatal(http.ListenAndServe(addr, handler))
 
 }
 
