@@ -7,11 +7,11 @@ import (
 	"net/http"
 
 	"github.com/owenso/crypto-portfolio-api/utils"
+	"github.com/rs/cors"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/owenso/crypto-portfolio-api/controllers"
-	"github.com/rs/cors"
 	"github.com/urfave/negroni"
 )
 
@@ -25,6 +25,7 @@ func (a *App) Run(addr string) {
 	handler := cors.Default().Handler(a.Router)
 	fmt.Println("Server running on port", addr)
 	log.Fatal(http.ListenAndServe(addr, handler))
+	// log.Fatal(http.ListenAndServe(addr, a.Router))
 
 }
 
@@ -54,25 +55,26 @@ func (a *App) Initialize(connectionString string) {
 func (a *App) ConfigureRouting() {
 	m := mux.NewRouter()
 	a.Router = m.PathPrefix("/api/v1").Subrouter()
-	a.ProtectedRoutes = a.Router.PathPrefix("/auth").Subrouter()
-
 	a.initializeRoutes()
+
 	a.Router.PathPrefix("/auth").Handler(negroni.New(
 		negroni.HandlerFunc(utils.ValidateTokenMiddleware),
 		negroni.Wrap(a.ProtectedRoutes),
 	))
-	a.initializeRoutes()
+	a.ProtectedRoutes = a.Router.PathPrefix("/auth").Subrouter()
 	a.initializeProtectedRoutes()
-	fmt.Println("Routes Up")
+
+	fmt.Println("Routes Loaded")
 }
 
 func (a *App) initializeRoutes() {
-	// a.Router.HandleFunc("/", controllers.HomePage).Methods("GET")
+	a.Router.HandleFunc("/", controllers.HomePage).Methods("GET")
 	a.Router.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) { controllers.UserSignup(w, r, a.DB) }).Methods("POST")
 	a.Router.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) { controllers.UserSignin(w, r, a.DB) }).Methods("POST")
 }
 
 func (a *App) initializeProtectedRoutes() {
+	a.ProtectedRoutes.HandleFunc("/validate", controllers.Validate).Methods("GET")
 	a.ProtectedRoutes.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) { controllers.GetUser(w, r, a.DB) }).Methods("GET")
 	// a.ProtectedRoutes.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) { controllers.UpdateUser(w, r, a.DB) }).Methods("PUT")
 	// a.ProtectedRoutes.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) { controllers.DeleteUser(w, r, a.DB) }).Methods("DELETE")
