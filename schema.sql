@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS privacy CASCADE;
 DROP TABLE IF EXISTS portfolioType CASCADE;
 DROP TABLE IF EXISTS alerts CASCADE;
 DROP TABLE IF EXISTS phoneNumber CASCADE;
+DROP TABLE IF EXISTS portfolioSort CASCADE; 
 
 -- CREATE TABLE phoneNumber(
 -- 	id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -33,10 +34,13 @@ CREATE TABLE users(
 	username VARCHAR(50) UNIQUE NOT NULL,
 	firstname VARCHAR(50),
 	lastname VARCHAR(50),
+    avatar VARCHAR(2083),
 	email VARCHAR(255) UNIQUE NOT NULL,
     -- phone uuid REFERENCES phoneNumber,
 	password BYTEA NOT NULL,
     provider VARCHAR(50),
+    email_confirmed BOOLEAN DEFAULT false,
+    email_confirmed_on TIMESTAMP,
     created TIMESTAMP DEFAULT current_timestamp,
     updated TIMESTAMP DEFAULT current_timestamp,
     lastseen TIMESTAMP DEFAULT current_timestamp
@@ -70,14 +74,20 @@ CREATE TABLE portfolio(
     updated TIMESTAMP DEFAULT current_timestamp
 );
 
+CREATE TABLE portfolioSort(
+    userID UUID REFERENCES users NOT NULL,
+    portfolioID int REFERENCES portfolio NOT NULL,
+    index SERIAL
+);
+
 CREATE TABLE transactions(
 	id SERIAL PRIMARY KEY,
 	userID UUID REFERENCES users NOT NULL,
-    portfolio SERIAL REFERENCES portfolio NOT NULL,
+    portfolio int REFERENCES portfolio NOT NULL,
     price NUMERIC(10, 5),
     transactionDate TIMESTAMP NOT NULL,
     qty INT NOT NULL,
-    crypto SERIAL REFERENCES cryptos NOT NULL,
+    crypto int REFERENCES cryptos NOT NULL,
     created TIMESTAMP DEFAULT current_timestamp,
     updated TIMESTAMP DEFAULT current_timestamp
 );
@@ -85,9 +95,9 @@ CREATE TABLE transactions(
 CREATE TABLE alerts(
     id SERIAL PRIMARY KEY,
     userID UUID REFERENCES users NOT NULL,
-    crypto SERIAL REFERENCES cryptos NOT NULL,
+    crypto int REFERENCES cryptos NOT NULL,
     emailAlert BOOLEAN DEFAULT false,
-    smsAlert BOOLEAN DEFAULT false,
+    -- smsAlert BOOLEAN DEFAULT false,
     pushAlert BOOLEAN DEFAULT false,
     targetPrice NUMERIC(10, 5),
     -- "==", ">=", "<=", "<", ">"

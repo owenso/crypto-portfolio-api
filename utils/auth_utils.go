@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -8,6 +9,10 @@ import (
 	"github.com/dgrijalva/jwt-go/request"
 	"github.com/owenso/crypto-portfolio-api/config"
 )
+
+type UserCtxKeyType string
+
+const UserCtxKey UserCtxKeyType = "user"
 
 func ValidateTokenMiddleware(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	token, err := request.ParseFromRequest(r, request.AuthorizationHeaderExtractor,
@@ -23,6 +28,14 @@ func ValidateTokenMiddleware(w http.ResponseWriter, r *http.Request, next http.H
 		})
 
 	if err == nil {
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			strs := claims["user"].(map[string]interface{})
+			str1 := strs["id"].(string)
+			ctx := r.Context()
+			ctx = context.WithValue(ctx, UserCtxKey, str1)
+			r = r.WithContext(ctx)
+		}
+
 		if token.Valid {
 			next(w, r)
 		} else {

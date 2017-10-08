@@ -9,6 +9,7 @@ import (
 	"github.com/owenso/crypto-portfolio-api/utils"
 	"github.com/rs/cors"
 
+	"github.com/getsentry/raven-go"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/owenso/crypto-portfolio-api/controllers"
@@ -16,13 +17,21 @@ import (
 )
 
 type App struct {
+	NegroniRouter   *negroni.Negroni
 	Router          *mux.Router
 	ProtectedRoutes *mux.Router
 	DB              *sql.DB
 }
 
 func (a *App) Run(addr string) {
-	handler := cors.Default().Handler(a.Router)
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:8008"},
+		AllowedMethods: []string{"GET", "POST", "DELETE"},
+		Debug:          true,
+		// AllowCredentials: true,
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
+	})
+	handler := c.Handler(a.NegroniRouter)
 	fmt.Println("Server running on port", addr)
 	log.Fatal(http.ListenAndServe(addr, handler))
 	// log.Fatal(http.ListenAndServe(addr, a.Router))
@@ -53,28 +62,37 @@ func (a *App) Initialize(connectionString string) {
 }
 
 func (a *App) ConfigureRouting() {
-	m := mux.NewRouter()
-	a.Router = m.PathPrefix("/api/v1").Subrouter()
+	a.Router = mux.NewRouter()
 	a.initializeRoutes()
 
-	a.Router.PathPrefix("/auth").Handler(negroni.New(
-		negroni.HandlerFunc(utils.ValidateTokenMiddleware),
-		negroni.Wrap(a.ProtectedRoutes),
-	))
 	a.ProtectedRoutes = a.Router.PathPrefix("/auth").Subrouter()
 	a.initializeProtectedRoutes()
+
+	sirMuxalot := http.NewServeMux()
+	sirMuxalot.Handle("/", a.Router)
+	sirMuxalot.Handle("/auth/", negroni.New(
+		negroni.HandlerFunc(utils.ValidateTokenMiddleware),
+		negroni.Wrap(a.Router),
+	))
+
+	raven.SetDSN("https://ad7c4df7f3284b2da1ce093c7b4e903d:f54a77a33bd747828937c7aaffef33ee@sentry.io/227280")
+	handler := http.HandlerFunc(raven.RecoveryHandler(sirMuxalot.ServeHTTP))
+
+	a.NegroniRouter = negroni.Classic()
+	a.NegroniRouter.UseHandler(handler)
 
 	fmt.Println("Routes Loaded")
 }
 
 func (a *App) initializeRoutes() {
-	a.Router.HandleFunc("/", controllers.HomePage).Methods("GET")
+	// a.Router.HandleFunc("/", controllers.HomePage).Methods("GET")
 	a.Router.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) { controllers.UserSignup(w, r, a.DB) }).Methods("POST")
 	a.Router.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) { controllers.UserSignin(w, r, a.DB) }).Methods("POST")
 }
 
 func (a *App) initializeProtectedRoutes() {
-	a.ProtectedRoutes.HandleFunc("/validate", controllers.Validate).Methods("GET")
+	a.ProtectedRoutes.HandleFunc("/validate", func(w http.ResponseWriter, r *http.Request) { controllers.Validate(w, r, a.DB) }).Methods("GET")
+	a.ProtectedRoutes.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) { controllers.GetUserFromToken(w, r, a.DB) }).Methods("GET")
 	a.ProtectedRoutes.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) { controllers.GetUser(w, r, a.DB) }).Methods("GET")
 	// a.ProtectedRoutes.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) { controllers.UpdateUser(w, r, a.DB) }).Methods("PUT")
 	// a.ProtectedRoutes.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) { controllers.DeleteUser(w, r, a.DB) }).Methods("DELETE")

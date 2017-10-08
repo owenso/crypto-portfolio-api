@@ -158,3 +158,18 @@ func FindUserByEmail(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	utils.RespondWithJSON(w, http.StatusOK, users)
 }
+
+func GetUserFromToken(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	userId := r.Context().Value(utils.UserCtxKey).(string)
+	u := models.User{ID: userId}
+	if err := u.GetUser(db); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			utils.RespondWithError(w, http.StatusNotFound, "User not found")
+		default:
+			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+	utils.RespondWithJSON(w, http.StatusOK, u)
+}
