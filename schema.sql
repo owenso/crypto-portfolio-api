@@ -1,3 +1,4 @@
+-- psql cryptowallet < schema.sql
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 DROP TABLE IF EXISTS users CASCADE;
@@ -34,7 +35,7 @@ CREATE TABLE users(
 	username VARCHAR(50) UNIQUE NOT NULL,
 	firstname VARCHAR(50),
 	lastname VARCHAR(50),
-    avatar VARCHAR(2083),
+    avatar VARCHAR(2083) DEFAULT 'http://placecage.com/400/400',
 	email VARCHAR(255) UNIQUE NOT NULL,
     -- phone uuid REFERENCES phoneNumber,
 	password BYTEA NOT NULL,

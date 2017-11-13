@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -15,16 +16,19 @@ type User struct {
 	Username  string `json:"username"`
 	FirstName string `json:"firstname"`
 	LastName  string `json:"lastname"`
+	Avatar    string `json:"avatar,omitempty"`
 	Email     string `json:"email"`
 	// Phone     struct {
 	// 	CountryCode string `json:"countryCode,omitempty"`
 	// 	PhoneNumber string `json:"phoneNumber,omitempty"`
 	// } `json:"phone,omitempty"`
-	Password string `json:"password,omitempty"`
-	Provider string `json:"provider,omitempty"`
-	Created  string `json:"created,omitempty"`
-	Updated  string `json:"updated,omitempty"`
-	LastSeen string `json:"lastseen,omitempty"`
+	Password         string      `json:"password,omitempty"`
+	Provider         string      `json:"provider,omitempty"`
+	EmailConfirmed   bool        `json:"emailConfirmed,omitempty"`
+	EmailConfirmedOn pq.NullTime `json:"emailConfirmedOn,omitempty"`
+	Created          string      `json:"created,omitempty"`
+	Updated          string      `json:"updated,omitempty"`
+	LastSeen         string      `json:"lastseen,omitempty"`
 }
 
 func hashPassword(pass string) (hash []byte, err error) {
@@ -40,7 +44,7 @@ func comparePass(hashedPassword string, password string) error {
 func (u *User) UserLogin(db *sql.DB) error {
 	query := `SELECT * FROM users WHERE username = $1 OR email = $2`
 	inputedPass := u.Password
-	err := db.QueryRow(query, u.Username, u.Email).Scan(&u.ID, &u.Username, &u.FirstName, &u.LastName, &u.Email, &u.Password, &u.Provider, &u.Created, &u.Updated, &u.LastSeen)
+	err := db.QueryRow(query, u.Username, u.Email).Scan(&u.ID, &u.Username, &u.FirstName, &u.LastName, &u.Avatar, &u.Email, &u.Password, &u.Provider, &u.EmailConfirmed, &u.EmailConfirmedOn, &u.Created, &u.Updated, &u.LastSeen)
 
 	if err != nil {
 		return err
@@ -52,7 +56,7 @@ func (u *User) UserLogin(db *sql.DB) error {
 }
 func (u *User) GetUser(db *sql.DB) error {
 	query := `SELECT * FROM users WHERE id = $1`
-	err := db.QueryRow(query, u.ID).Scan(&u.ID, &u.Username, &u.FirstName, &u.LastName, &u.Email, &u.Password, &u.Provider, &u.Created, &u.Updated, &u.LastSeen)
+	err := db.QueryRow(query, u.ID).Scan(&u.ID, &u.Username, &u.FirstName, &u.LastName, &u.Avatar, &u.Email, &u.Password, &u.Provider, &u.EmailConfirmed, &u.EmailConfirmedOn, &u.Created, &u.Updated, &u.LastSeen)
 	u.Password = ""
 	if err != nil {
 		return err

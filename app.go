@@ -25,11 +25,11 @@ type App struct {
 
 func (a *App) Run(addr string) {
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:8008"},
-		AllowedMethods: []string{"GET", "POST", "DELETE"},
-		Debug:          true,
-		// AllowCredentials: true,
-		AllowedHeaders: []string{"Content-Type", "Authorization"},
+		AllowedOrigins:   []string{"http://localhost:8008"},
+		AllowedMethods:   []string{"GET", "POST", "DELETE"},
+		Debug:            false,
+		AllowCredentials: true,
+		AllowedHeaders:   []string{"Content-Type", "Authorization", "Connection"},
 	})
 	handler := c.Handler(a.NegroniRouter)
 	fmt.Println("Server running on port", addr)
@@ -65,18 +65,24 @@ func (a *App) ConfigureRouting() {
 	a.Router = mux.NewRouter()
 	a.initializeRoutes()
 
+	// a.SocketRoute = a.Router.PathPrefix("/socket.io").Subrouter()
+	// a.initializeSockets()
+	// a.initializeCMC()
+
 	a.ProtectedRoutes = a.Router.PathPrefix("/auth").Subrouter()
 	a.initializeProtectedRoutes()
 
-	sirMuxalot := http.NewServeMux()
-	sirMuxalot.Handle("/", a.Router)
-	sirMuxalot.Handle("/auth/", negroni.New(
+	mux := http.NewServeMux()
+	mux.Handle("/", a.Router)
+	mux.Handle("/auth/", negroni.New(
 		negroni.HandlerFunc(utils.ValidateTokenMiddleware),
 		negroni.Wrap(a.Router),
 	))
-
+	// mux.Handle("/socket.io/", a.initializeSockets)
+	server := InitializeSockets()
+	mux.Handle("/socket.io/", server)
 	raven.SetDSN("https://ad7c4df7f3284b2da1ce093c7b4e903d:f54a77a33bd747828937c7aaffef33ee@sentry.io/227280")
-	handler := http.HandlerFunc(raven.RecoveryHandler(sirMuxalot.ServeHTTP))
+	handler := http.HandlerFunc(raven.RecoveryHandler(mux.ServeHTTP))
 
 	a.NegroniRouter = negroni.Classic()
 	a.NegroniRouter.UseHandler(handler)
@@ -84,14 +90,22 @@ func (a *App) ConfigureRouting() {
 	fmt.Println("Routes Loaded")
 }
 
+// func (a *App) wrapController(w http.ResponseWriter, r *http.Request, controller func) {
+// 	controller(w, r, a.DB)
+// }
+
 func (a *App) initializeRoutes() {
 	// a.Router.HandleFunc("/", controllers.HomePage).Methods("GET")
 	a.Router.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) { controllers.UserSignup(w, r, a.DB) }).Methods("POST")
 	a.Router.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) { controllers.UserSignin(w, r, a.DB) }).Methods("POST")
+	// a.Router.HandleFunc("/passreset", func(w http.ResponseWriter, r *http.Request) { controllers.UserPassReset(w, r, a.DB) }).Methods("POST")
 }
 
 func (a *App) initializeProtectedRoutes() {
 	a.ProtectedRoutes.HandleFunc("/validate", func(w http.ResponseWriter, r *http.Request) { controllers.Validate(w, r, a.DB) }).Methods("GET")
+	a.ProtectedRoutes.HandleFunc("/portfolio/add", func(w http.ResponseWriter, r *http.Request) { controllers.AddPortfolio(w, r, a.DB) }).Methods("POST")
+	a.ProtectedRoutes.HandleFunc("/portfolio/edit", func(w http.ResponseWriter, r *http.Request) { controllers.EditPortfolio(w, r, a.DB) }).Methods("POST")
+	a.ProtectedRoutes.HandleFunc("/portfolio/delete", func(w http.ResponseWriter, r *http.Request) { controllers.DeletePortfolio(w, r, a.DB) }).Methods("POST")
 	a.ProtectedRoutes.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) { controllers.GetUserFromToken(w, r, a.DB) }).Methods("GET")
 	a.ProtectedRoutes.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) { controllers.GetUser(w, r, a.DB) }).Methods("GET")
 	// a.ProtectedRoutes.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) { controllers.UpdateUser(w, r, a.DB) }).Methods("PUT")
