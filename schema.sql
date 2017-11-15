@@ -52,6 +52,7 @@ CREATE TABLE cryptos(
     id SERIAL PRIMARY KEY,
     symbol VARCHAR(10) UNIQUE,
     name VARCHAR(255),
+    active BOOLEAN DEFAULT true
     created TIMESTAMP DEFAULT current_timestamp,
     updated TIMESTAMP DEFAULT current_timestamp
 );

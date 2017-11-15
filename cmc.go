@@ -36,7 +36,10 @@ func CallCMC(t time.Time) CmcArray {
 
 	if err != nil {
 		fmt.Println(err)
-		log.Fatal("Error Connecting to CoinMarketCap\n", t)
+		// log.Fatal("Error Connecting to CoinMarketCap\n", t)
+		fmt.Println("Error Connecting to CoinMarketCap\n", t)
+		result := CmcArray{}
+		return result
 	}
 	defer rs.Body.Close()
 
