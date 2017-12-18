@@ -64,3 +64,7 @@ func CallCMC(t time.Time) CmcArray {
 
 	return result
 }
+
+func PopulateCryptoList () {
+	
+}

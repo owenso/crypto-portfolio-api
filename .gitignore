@@ -1,2 +1,4 @@
 .DS_Store
 config/config.dev.json
+settings.py
+.vscode
