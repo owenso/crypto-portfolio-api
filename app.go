@@ -104,6 +104,7 @@ func (a *App) initializeRoutes() {
 func (a *App) initializeProtectedRoutes() {
 	a.ProtectedRoutes.HandleFunc("/validate", func(w http.ResponseWriter, r *http.Request) { controllers.Validate(w, r, a.DB) }).Methods("GET")
 
+	a.ProtectedRoutes.HandleFunc("/portfolio/types", func(w http.ResponseWriter, r *http.Request) { controllers.GetPortfolioTypes(w, r, a.DB) }).Methods("GET")
 	a.ProtectedRoutes.HandleFunc("/portfolio/add", func(w http.ResponseWriter, r *http.Request) { controllers.AddPortfolio(w, r, a.DB) }).Methods("POST")
 	a.ProtectedRoutes.HandleFunc("/portfolio/edit", func(w http.ResponseWriter, r *http.Request) { controllers.EditPortfolio(w, r, a.DB) }).Methods("POST")
 	a.ProtectedRoutes.HandleFunc("/portfolio/delete", func(w http.ResponseWriter, r *http.Request) { controllers.DeletePortfolio(w, r, a.DB) }).Methods("POST")
@@ -117,4 +118,5 @@ func (a *App) initializeProtectedRoutes() {
 	a.ProtectedRoutes.HandleFunc("/users/search/username/{search}", func(w http.ResponseWriter, r *http.Request) { controllers.FindUsersByUsername(w, r, a.DB) }).Methods("GET")
 
 	a.ProtectedRoutes.HandleFunc("/coins/list", func(w http.ResponseWriter, r *http.Request) { controllers.GetCryptos(w, r, a.DB) }).Methods("GET")
+
 }

@@ -66,3 +66,26 @@ func DeletePortfolio(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	utils.RespondWithJSON(w, http.StatusCreated, p)
 }
+
+func GetPortfolioTypes(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	type TypesResponse struct {
+		Privacy        []models.PortfolioTypes
+		PortfolioTypes []models.PortfolioTypes
+	}
+
+	p, err := models.GetPrivacyTypes(db)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	pt, err := models.GetPortfolioTypes(db)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	res := TypesResponse{p, pt}
+	utils.RespondWithJSON(w, http.StatusOK, res)
+
+}

@@ -15,7 +15,7 @@ type Crypto struct {
 }
 
 func GetAllCryptos(db *sql.DB) ([]Crypto, error) {
-	query := `SELECT * FROM cryptos`
+	query := `SELECT * FROM cryptos ORDER BY symbol`
 
 	rows, err := db.Query(query)
 

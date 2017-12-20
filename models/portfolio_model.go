@@ -16,6 +16,11 @@ type Portfolio struct {
 	Updated         time.Time `json:"updated,omitempty"`
 }
 
+type PortfolioTypes struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 func (p *Portfolio) AddPortfolio(db *sql.DB) error {
 
 	query := `INSERT INTO portfolio (userid, title, portfolioType, startingBalance, privacy)
@@ -66,6 +71,8 @@ func (p *Portfolio) DeletePortfolio(db *sql.DB) error {
 
 func (p *Portfolio) GetAllPortfolioByUserId(db *sql.DB) error {
 
+	// probably broken
+
 	query := `SELECT * FROM portfolio WHERE userId = $1 INNER JOIN portfolioSort WHERE portfolioSort.userID = portfolio.userId AND portfolioSort.portfolioID = portfolio.id;`
 
 	err := db.QueryRow(query, p.UserID).Scan(&p.ID, &p.UserID, &p.Title, &p.PortfioloType, &p.StartingBalance, &p.Privacy, &p.Created, &p.Updated)
@@ -74,4 +81,48 @@ func (p *Portfolio) GetAllPortfolioByUserId(db *sql.DB) error {
 		return err
 	}
 	return nil
+}
+
+func GetPrivacyTypes(db *sql.DB) ([]PortfolioTypes, error) {
+
+	privacy := []PortfolioTypes{}
+	query := `SELECT * FROM privacy;`
+
+	rows, err := db.Query(query)
+	defer rows.Close()
+	for rows.Next() {
+		var p PortfolioTypes
+		err := rows.Scan(&p.ID, &p.Name)
+		if err != nil {
+			return nil, err
+		}
+		privacy = append(privacy, p)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return privacy, nil
+}
+
+func GetPortfolioTypes(db *sql.DB) ([]PortfolioTypes, error) {
+
+	portfolioTypes := []PortfolioTypes{}
+
+	query := `SELECT * FROM portfolioType;`
+
+	rows, err := db.Query(query)
+	defer rows.Close()
+	for rows.Next() {
+		var p PortfolioTypes
+		err := rows.Scan(&p.ID, &p.Name)
+		if err != nil {
+			return nil, err
+		}
+		portfolioTypes = append(portfolioTypes, p)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return portfolioTypes, nil
 }

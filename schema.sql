@@ -1,7 +1,7 @@
 -- psql cryptowallet < schema.sql
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-DROP TABLE IF EXISTS users CASCADE;
+-- DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS cryptos CASCADE;
 DROP TABLE IF EXISTS wallets CASCADE;
 DROP TABLE IF EXISTS portfolioEntry CASCADE;
@@ -22,12 +22,12 @@ DROP TABLE IF EXISTS portfolioSort CASCADE;
 
 CREATE TABLE privacy(
     id SERIAL PRIMARY KEY,
-    level VARCHAR(25)
+    name VARCHAR(25)
 );
 
 CREATE TABLE portfolioType(
     id SERIAL PRIMARY KEY,
-    type VARCHAR(25)
+    name VARCHAR(25)
 );
 
 CREATE TABLE users(
@@ -53,8 +53,9 @@ CREATE TABLE cryptos(
     symbol VARCHAR(10) UNIQUE,
     name VARCHAR(255),
     active BOOLEAN DEFAULT true,
+    added_by UUID REFERENCES users ,
     created TIMESTAMP DEFAULT current_timestamp,
-    updated TIMESTAMP DEFAULT current_timestamp
+    updated TIMESTAMP
 );
 
 CREATE TABLE wallets(
@@ -82,11 +83,18 @@ CREATE TABLE portfolioSort(
     index SERIAL
 );
 
+CREATE TABLE exchanges(
+    int SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
 CREATE TABLE transactions(
 	id SERIAL PRIMARY KEY,
 	userID UUID REFERENCES users NOT NULL,
     portfolio int REFERENCES portfolio NOT NULL,
+    exchange int REFERENCES exchanges,
     price NUMERIC(10, 5),
+    fee NUMERIC(10, 5),
     transactionDate TIMESTAMP NOT NULL,
     qty INT NOT NULL,
     crypto int REFERENCES cryptos NOT NULL,
@@ -112,5 +120,5 @@ CREATE TABLE friends(
     friendID UUID REFERENCES users NOT NULL
 );
 
-INSERT INTO privacy (level) VALUES ('private'), ('friends_only'), ('public');
-INSERT INTO portfolioType (type) VALUES ('normal'), ('paper_trade'), ('competitive');
+INSERT INTO privacy (name) VALUES ('private'), ('friends_only'), ('public');
+INSERT INTO portfolioType (name) VALUES ('normal'), ('paper_trade'), ('competitive');
