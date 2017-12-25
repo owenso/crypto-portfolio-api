@@ -104,6 +104,7 @@ func (a *App) initializeRoutes() {
 func (a *App) initializeProtectedRoutes() {
 	a.ProtectedRoutes.HandleFunc("/validate", func(w http.ResponseWriter, r *http.Request) { controllers.Validate(w, r, a.DB) }).Methods("GET")
 
+	a.ProtectedRoutes.HandleFunc("/portfolio/list", func(w http.ResponseWriter, r *http.Request) { controllers.GetUserPortfolios(w, r, a.DB) }).Methods("GET")
 	a.ProtectedRoutes.HandleFunc("/portfolio/types", func(w http.ResponseWriter, r *http.Request) { controllers.GetPortfolioTypes(w, r, a.DB) }).Methods("GET")
 	a.ProtectedRoutes.HandleFunc("/portfolio/add", func(w http.ResponseWriter, r *http.Request) { controllers.AddPortfolio(w, r, a.DB) }).Methods("POST")
 	a.ProtectedRoutes.HandleFunc("/portfolio/edit", func(w http.ResponseWriter, r *http.Request) { controllers.EditPortfolio(w, r, a.DB) }).Methods("POST")

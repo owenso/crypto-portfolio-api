@@ -89,3 +89,14 @@ func GetPortfolioTypes(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	utils.RespondWithJSON(w, http.StatusOK, res)
 
 }
+
+func GetUserPortfolios(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	userId := r.Context().Value(utils.UserCtxKey).(string)
+
+	p, err := models.GetAllPortfolioByUserId(db, userId)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	utils.RespondWithJSON(w, http.StatusOK, p)
+}

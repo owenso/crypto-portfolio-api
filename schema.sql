@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS portfolioType CASCADE;
 DROP TABLE IF EXISTS alerts CASCADE;
 DROP TABLE IF EXISTS phoneNumber CASCADE;
 DROP TABLE IF EXISTS portfolioSort CASCADE; 
+DROP TABLE IF EXISTS competitionWinners CASCADE; 
 
 -- CREATE TABLE phoneNumber(
 -- 	id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -22,12 +23,16 @@ DROP TABLE IF EXISTS portfolioSort CASCADE;
 
 CREATE TABLE privacy(
     id SERIAL PRIMARY KEY,
-    name VARCHAR(25)
+    name VARCHAR(25),
+    enabled BOOLEAN,
+    description TEXT
 );
 
 CREATE TABLE portfolioType(
     id SERIAL PRIMARY KEY,
-    name VARCHAR(25)
+    name VARCHAR(25),
+    enabled BOOLEAN,
+    description TEXT
 );
 
 CREATE TABLE users(
@@ -67,7 +72,7 @@ CREATE TABLE wallets(
 );
 
 CREATE TABLE portfolio(
-	id SERIAL PRIMARY KEY,
+	id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 	userID UUID REFERENCES users NOT NULL,
     title VARCHAR(255) NOT NULL,
     portfolioType smallint REFERENCES portfolioType DEFAULT 1,
@@ -79,7 +84,7 @@ CREATE TABLE portfolio(
 
 CREATE TABLE portfolioSort(
     userID UUID REFERENCES users NOT NULL,
-    portfolioID int REFERENCES portfolio NOT NULL,
+    portfolioID UUID REFERENCES portfolio NOT NULL,
     index SERIAL
 );
 
@@ -91,7 +96,7 @@ CREATE TABLE exchanges(
 CREATE TABLE transactions(
 	id SERIAL PRIMARY KEY,
 	userID UUID REFERENCES users NOT NULL,
-    portfolio int REFERENCES portfolio NOT NULL,
+    portfolio UUID REFERENCES portfolio NOT NULL,
     exchange int REFERENCES exchanges,
     price NUMERIC(10, 5),
     fee NUMERIC(10, 5),
@@ -120,5 +125,16 @@ CREATE TABLE friends(
     friendID UUID REFERENCES users NOT NULL
 );
 
-INSERT INTO privacy (name) VALUES ('private'), ('friends_only'), ('public');
-INSERT INTO portfolioType (name) VALUES ('normal'), ('paper_trade'), ('competitive');
+CREATE TABLE competitionWinners(
+    id SERIAL PRIMARY KEY,
+    userID UUID REFERENCES users NOT NULL,
+    competition_period DATE NOT NULL
+);
+
+INSERT INTO privacy (name, description, enabled) VALUES ('private', 'Only you will see your portfolio details. Your portfolio will not be listed anywhere.', true);
+INSERT INTO privacy (name, description, enabled) VALUES ('friends_only', 'Only those you accept as a friend will see your portfolio details. However, they will not be able to see exact figures, only percentages.', true);
+INSERT INTO privacy (name, description, enabled) VALUES ('public', 'Anyone can see your portfolio details. However, they will not be able to see exact figures, only percentages.' , true);
+
+
+INSERT INTO portfolioType (name, description, enabled) VALUES ('normal', 'A portfolio to keep track of your trades.', true);
+INSERT INTO portfolioType (name, description, enabled) VALUES ('competition', 'Competition portfolios all start off with 10 BTC. At the end of each month, the portfolio with the largest gain wins and the competion is reset.  Competition portfolios must be public. ', false);

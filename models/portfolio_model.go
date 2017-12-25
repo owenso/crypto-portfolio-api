@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -14,11 +15,13 @@ type Portfolio struct {
 	Privacy         int       `json:"privacy"`
 	Created         time.Time `json:"created,omitempty"`
 	Updated         time.Time `json:"updated,omitempty"`
+	Index           int       `json:"index,omitempty"`
 }
 
 type PortfolioTypes struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"descripton"`
 }
 
 func (p *Portfolio) AddPortfolio(db *sql.DB) error {
@@ -35,8 +38,9 @@ func (p *Portfolio) AddPortfolio(db *sql.DB) error {
 		return err
 	}
 
-	errTwo := db.QueryRow(queryTwo, p.UserID, p.Title, p.PortfioloType, p.StartingBalance, p.Privacy)
+	errTwo := db.QueryRow(queryTwo, p.UserID, p.ID)
 	if errTwo != nil {
+		fmt.Println(err)
 		return err
 	}
 
@@ -69,30 +73,38 @@ func (p *Portfolio) DeletePortfolio(db *sql.DB) error {
 	return nil
 }
 
-func (p *Portfolio) GetAllPortfolioByUserId(db *sql.DB) error {
+func GetAllPortfolioByUserId(db *sql.DB, userid string) ([]Portfolio, error) {
 
-	// probably broken
+	portfolios := []Portfolio{}
 
-	query := `SELECT * FROM portfolio WHERE userId = $1 INNER JOIN portfolioSort WHERE portfolioSort.userID = portfolio.userId AND portfolioSort.portfolioID = portfolio.id;`
+	query := `SELECT p.*, ps.index FROM portfolio AS p INNER JOIN portfoliosort AS ps ON ps.userid = p.userid AND ps.portfolioid = p.id WHERE p.userid = $1`
 
-	err := db.QueryRow(query, p.UserID).Scan(&p.ID, &p.UserID, &p.Title, &p.PortfioloType, &p.StartingBalance, &p.Privacy, &p.Created, &p.Updated)
-
-	if err != nil {
-		return err
+	rows, err := db.Query(query, userid)
+	defer rows.Close()
+	for rows.Next() {
+		var p Portfolio
+		err := rows.Scan(&p.ID, &p.UserID, &p.Title, &p.PortfioloType, &p.StartingBalance, &p.Privacy, &p.Created, &p.Updated, &p.Index)
+		if err != nil {
+			return nil, err
+		}
+		portfolios = append(portfolios, p)
 	}
-	return nil
+	if err != nil {
+		return nil, err
+	}
+	return portfolios, nil
 }
 
 func GetPrivacyTypes(db *sql.DB) ([]PortfolioTypes, error) {
 
 	privacy := []PortfolioTypes{}
-	query := `SELECT * FROM privacy;`
+	query := `SELECT id, name, description FROM privacy WHERE enabled = true;`
 
 	rows, err := db.Query(query)
 	defer rows.Close()
 	for rows.Next() {
 		var p PortfolioTypes
-		err := rows.Scan(&p.ID, &p.Name)
+		err := rows.Scan(&p.ID, &p.Name, &p.Description)
 		if err != nil {
 			return nil, err
 		}
@@ -108,13 +120,13 @@ func GetPortfolioTypes(db *sql.DB) ([]PortfolioTypes, error) {
 
 	portfolioTypes := []PortfolioTypes{}
 
-	query := `SELECT * FROM portfolioType;`
+	query := `SELECT id, name, description FROM portfolioType WHERE enabled = true;`
 
 	rows, err := db.Query(query)
 	defer rows.Close()
 	for rows.Next() {
 		var p PortfolioTypes
-		err := rows.Scan(&p.ID, &p.Name)
+		err := rows.Scan(&p.ID, &p.Name, &p.Description)
 		if err != nil {
 			return nil, err
 		}
