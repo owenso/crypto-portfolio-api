@@ -109,6 +109,7 @@ func (a *App) initializeProtectedRoutes() {
 	a.ProtectedRoutes.HandleFunc("/portfolio/add", func(w http.ResponseWriter, r *http.Request) { controllers.AddPortfolio(w, r, a.DB) }).Methods("POST")
 	a.ProtectedRoutes.HandleFunc("/portfolio/edit", func(w http.ResponseWriter, r *http.Request) { controllers.EditPortfolio(w, r, a.DB) }).Methods("POST")
 	a.ProtectedRoutes.HandleFunc("/portfolio/delete", func(w http.ResponseWriter, r *http.Request) { controllers.DeletePortfolio(w, r, a.DB) }).Methods("POST")
+	a.ProtectedRoutes.HandleFunc("/portfolio/sort", func(w http.ResponseWriter, r *http.Request) { controllers.DeletePortfolio(w, r, a.DB) }).Methods("POST")
 
 	a.ProtectedRoutes.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) { controllers.GetUserFromToken(w, r, a.DB) }).Methods("GET")
 	a.ProtectedRoutes.HandleFunc("/user/{id}", func(w http.ResponseWriter, r *http.Request) { controllers.GetUser(w, r, a.DB) }).Methods("GET")

@@ -100,3 +100,23 @@ func GetUserPortfolios(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 	utils.RespondWithJSON(w, http.StatusOK, p)
 }
+
+func ReorderPortfolios(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	var ps []models.PortfolioSort
+	decoder := json.NewDecoder(r.Body)
+	fmt.Println(decoder)
+	if err := decoder.Decode(&ps); err != nil {
+		fmt.Println(err)
+		utils.RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	defer r.Body.Close()
+
+	if err := models.ReorderPortfolios(ps, db); err != nil {
+		fmt.Println(err)
+		utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusCreated, ps)
+}

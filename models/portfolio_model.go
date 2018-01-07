@@ -24,6 +24,12 @@ type PortfolioTypes struct {
 	Description string `json:"descripton"`
 }
 
+type PortfolioSort struct {
+	UserID      string `json:"userid"`
+	PortfolioID string `json:"portfolioid"`
+	Index       string `json:"index"`
+}
+
 func (p *Portfolio) AddPortfolio(db *sql.DB) error {
 
 	query := `INSERT INTO portfolio (userid, title, portfolioType, startingBalance, privacy)
@@ -77,7 +83,7 @@ func GetAllPortfolioByUserId(db *sql.DB, userid string) ([]Portfolio, error) {
 
 	portfolios := []Portfolio{}
 
-	query := `SELECT p.*, ps.index FROM portfolio AS p INNER JOIN portfoliosort AS ps ON ps.userid = p.userid AND ps.portfolioid = p.id WHERE p.userid = $1`
+	query := `SELECT p.*, ps.index FROM portfolio AS p INNER JOIN portfoliosort AS ps ON ps.userid = p.userid AND ps.portfolioid = p.id WHERE p.userid = $1 ORDER BY ps.index`
 
 	rows, err := db.Query(query, userid)
 	defer rows.Close()
@@ -137,4 +143,9 @@ func GetPortfolioTypes(db *sql.DB) ([]PortfolioTypes, error) {
 	}
 
 	return portfolioTypes, nil
+}
+
+func ReorderPortfolios(ps []PortfolioSort, db *sql.DB) error {
+	fmt.Println(ps)
+	return nil
 }
